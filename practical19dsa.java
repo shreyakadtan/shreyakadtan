@@ -108,4 +108,4 @@ public class MergeSort {
         scanner.close(); // Close the scanner
     }
 }
-//time complexity:O(n)
+//time complexity:O(n logn)
