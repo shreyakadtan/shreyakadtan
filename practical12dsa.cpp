@@ -1,166 +1,187 @@
-#include <iostream>
-#include <string.h>
-#define max 10  // Maximum size of the hash table
+// With Replacement
+
+#include<iostream>
+#include<string.h>
+#define max 10
 using namespace std;
 
-// Structure for a node in the hash table
+// Node structure for the hash table
 struct node {
-    char name[15];     // Person's name
-    long int mobno;    // Mobile number (used as key)
+    char name[10];     // Name of the person
+    long int mn;       // Mobile number
     int chain;         // Chain pointer for collision resolution
 
-    // Constructor to initialize default/empty values
+    // Constructor initializes node to default values
     node() {
-        strcpy(name, "-");
-        mobno = 0;
+        mn = 0;
         chain = -1;
+        strcpy(name, "-----");
     }
 };
 
-// Hash table class using open addressing with linear probing and chaining
-class hasht {
-    node ht[max];  // Hash table array
+// Telephone directory class with hash table implementation
+class telephone {
 public:
+    node ht[max];      // Hash table of size 'max'
+    int count;         // Count of entries in the hash table
+
+    telephone() { count = 0; }
+
     int hashfun(long int);  // Hash function
-    void insert();          // Insert a key-value pair
-    void display();         // Display the hash table
-    void search();          // Search for a key
-    void del();             // Delete a key
+    void insert();          // Insert a new record
+    void find();            // Search for a record
+    void delno();           // Delete a record
+    void display();         // Display all records
 };
 
-// Hash function: simple modulo
-int hasht::hashfun(long int num) {
-    return (num % max);
+// Simple hash function: returns last digit of number
+int telephone::hashfun(long int num) {
+    return (num % 10);
 }
 
-// Insert a record using linear probing and maintain chaining
-void hasht::insert() {
-    int ind, prev;
-    node S;
+// Insert a new record into the hash table
+void telephone::insert() {
+    node s;
+    int index;
 
-    cout << "Enter name and mobile number of a person:" << endl;
-    cin >> S.name >> S.mobno;
+    cout <<"Enter name: \n";
+    cin >> s.name;
+    cout <<"Enter telephone number:\n";
+    cin >> s.mn;
 
-    ind = hashfun(S.mobno);  // Get index using hash function
+    index = hashfun(s.mn);  // Get hash index
+    cout << "Index= " << index << endl;
 
-    // If slot is empty, insert directly
-    if (ht[ind].mobno == 0) {
-        ht[ind] = S;
-    } else {
-        // Collision: find next empty slot using linear probing
-        prev = ind;
-        while (ht[ind].mobno != 0) {
-            ind = (ind + 1) % max;
-        }
-        ht[ind] = S;               // Insert at empty slot
-        ht[prev].chain = ind;     // Link the previous record to new one
+    // Case 1: Slot is empty
+    if (ht[index].mn == 0) {
+        ht[index] = s;
+        count++;
     }
-}
-
-// Display the contents of the hash table
-void hasht::display() {
-    cout << "Index\tName\t\tMobile Number\tChain" << endl;
-    for (int i = 0; i < max; i++) {
-        cout << i << "\t" << ht[i].name << "\t\t" << ht[i].mobno << "\t\t" << ht[i].chain << endl;
-    }
-}
-
-// Search for a mobile number
-void hasht::search(){
-    long int num;
-    int ind;
-    cout << "Enter the number you want to search: ";
-    cin >> num;
-
-    ind = hashfun(num);  // Start from the hash index
-
-    // Traverse chain until found or end of chain
-    while(ind != -1){
-        if(num == ht[ind].mobno){
-            cout << "Mobile number is present at index: " << ind << endl;
-            return;
-        }
-        ind = ht[ind].chain;
-    }
-    cout << "Record not found." << endl;
-}
-
-// Delete a mobile number
-void hasht::del(){
-    long int num;
-    int ind, prev;
-    cout << "Enter the number you want to delete: ";
-    cin >> num;
-
-    ind = hashfun(num);  // Get starting index from hash
-    prev = -1;
-
-    // Traverse the chain to find the key
-    while(ind != -1){
-        if(num == ht[ind].mobno){
-            // If it's a leaf node in the chain
-            if(ht[ind].chain == -1) {
-                strcpy(ht[ind].name, "-");
-                ht[ind].mobno = 0;
-                cout << "Record is deleted";
-            } else {
-                // Copy next chained record into current
-                int next = ht[ind].chain;
-                ht[ind] = ht[next];
-
-                // Clear next slot
-                strcpy(ht[next].name, "-");
-                ht[next].mobno = 0;
-                ht[next].chain = -1;
+    // Case 2: Collision, but same hash index (chain from original slot)
+    else if (hashfun(ht[index].mn) == index) {
+        int prev = index;
+        while (ht[index].mn != 0) {
+            if (ht[index].chain != -1)
+                index = ht[index].chain;  // Follow the chain
+            else {
+                // Find next empty slot
+                while (ht[index].mn != 0)
+                    index = (index + 1) % max;
+                ht[prev].chain = index;  // Link the previous chain to new index
             }
-
-            // If there's a previous node, break its chain
-            if(prev != -1)
-                ht[prev].chain = -1;
-
-            return;
         }
-
-        prev = ind;
-        ind = ht[ind].chain;  // Move to next node in chain
+        ht[index] = s;  // Insert new record
+        count++;
     }
-    cout << "Record not found." << endl;
+    // Case 3: Collision, but current record is not at its hash index
+    else {
+        int newIndex = index;
+        while (ht[newIndex].mn != 0)
+            newIndex = (newIndex + 1) % max;
+
+        node temp = ht[index];    // Save the existing record
+        ht[newIndex] = temp;      // Move old record to new location
+        ht[index] = s;            // Insert new record at original index
+
+        // Update the chain pointers
+        int tempIndex = hashfun(temp.mn);
+        while (ht[tempIndex].chain != index)
+            tempIndex = ht[tempIndex].chain;
+        ht[tempIndex].chain = newIndex;
+
+        ht[index].chain = -1;  // New record doesn't have a chain
+        count++;
+    }
 }
 
-// Main function with menu for user interaction
-int main(){
-    int cho;
-    hasht h;
-    char a;
+// Search for a telephone number in the hash table
+void telephone::find() {
+    long int num;
+    int cnt = 0;
+    cout << "Enter the telephone number to search: ";
+    cin >> num;
+    int index = hashfun(num);
 
+    // Traverse through the chain
+    while (index != -1) {
+        cnt++;
+        if (ht[index].mn == num) {
+            cout <<"Record Found!\n";
+            cout <<"Name: " << ht[index].name << endl;
+            cout << "Phone: " << ht[index].mn << endl;
+            cout << "Found at index: " << index << endl;
+            cout << "Comparisons: " << cnt << endl;
+            return;
+        }
+        index = ht[index].chain;  // Move to next in chain
+    }
+    cout << "Record Not Found!\n";
+}
+
+// Delete a telephone number from the hash table
+void telephone::delno() {
+    long int num;
+    cout << "Enter the telephone number to delete: ";
+    cin >> num;
+    int index = hashfun(num);
+    int prev = -1;
+
+    // Traverse the chain to find the number
+    while (index != -1) {
+        if (ht[index].mn == num) {
+            cout << "Record Deleted!\n";
+            ht[index].mn = 0;
+            strcpy(ht[index].name, "-----");
+            if (prev != -1)
+                ht[prev].chain = ht[index].chain;  // Update chain of previous
+            ht[index].chain = -1;
+            return;
+        }
+        prev = index;
+        index = ht[index].chain;
+    }
+    cout << "Record Not Found!\n";
+}
+
+// Display all records in the hash table
+void telephone::display() {
+    for (int i = 0; i < max; i++) {
+        cout << i << "\t" << ht[i].name << "\t" << ht[i].mn << "\t" << ht[i].chain << endl;
+    }
+}
+
+int main() {
+    telephone t;
+    int ch;
+    char ans;
+
+    // Menu-driven program
     do {
-        cout << "1.Insert \n2.Display\n3.Search\n4.Delete\n5.Exit\nEnter your choice: ";
-        cin >> cho;
+        cout << "Enter your choice" << endl;
+        cout << "1.Insert" << endl;
+        cout << "2.Display" << endl;
+        cout << "3.Search" << endl;
+        cout << "4.Delete" << endl;
+        cin >> ch;
 
-        switch(cho){
-            case 1:
-                h.insert();
-                break;
-            case 2:
-                h.display();
-                break;
-            case 3:
-                h.search();
-                break;
-            case 4:
-                h.del();
-                break;
-            case 5:
-                cout << "Exiting..." << endl;
-                break;
-            default:
-                cout << "Invalid choice!" << endl;
+        switch (ch) {
+            case 1: t.insert();
+                    break;
+            case 2: t.display();
+                    break;
+            case 3: t.find();
+                    break;
+            case 4: t.delno();
+                    break;
+            default: cout << "Invalid choice!!";
         }
 
-        cout << "Do you want to continue? (y/n): ";
-        cin >> a;
-
-    } while(a == 'y');  // ❌ Bug: should use `==`, not `=` (assignment)
+        cout << "Do you want to continue? (1/0)";
+        cin >> ans;
+    } while (ans == '1');
 
     return 0;
 }
+
+//complexity- O(n)
+
