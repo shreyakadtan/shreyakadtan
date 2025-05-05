@@ -147,3 +147,6 @@ int main() {
     o.display();     // Display final OBST structure and cost
     return 0;
 }
+//time complexity:best case-O(n2)
+                //avg case-O(n2)
+                //worst case-O(n3)
