@@ -146,3 +146,4 @@ int main() {
 	bfs();           // Perform BFS traversal
 	return 0;
 }
+//time complexity: O(V + E)
