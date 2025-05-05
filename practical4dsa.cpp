@@ -1,78 +1,77 @@
 //Represent a given graph using adjacency matrix to perform BFS using recursive
 //method
-#include<iostream>
+#include <iostream>
+#define max 100
 using namespace std;
 
-const int MAX = 100; // Maximum number of vertices
-int adj[MAX][MAX];   // Adjacency matrix to represent the graph
-bool visited[MAX];   // Array to track visited vertices
-int numVertices;     // Number of vertices in the graph
+bool visited[max]; // Array to keep track of visited vertices
+int adj[max][max]; // Adjacency matrix to represent the graph
+int front = 0, rear = 0; // Indices for queue front and rear
+int queue[max]; // Queue implementation using array
 
-// Recursive function to perform BFS using a queue
-void bfsrecursive(int queue[], int &front, int &rear) {
-    // Base condition: If the queue is empty, return
-    if (front > rear) {
-        return;
+// Function to insert an element into the queue
+void enqueue(int a) {
+    if (rear < max) {
+        queue[rear++] = a;
     }
-
-    // Dequeue the front element and process it
-    int current = queue[front];
-    front++;
-    cout << current << " ";
-
-    // Visit all unvisited adjacent vertices and enqueue them
-    for (int i = 0; i < numVertices; i++) {
-        if (adj[current][i] == 1 && !visited[i]) {
-            visited[i] = true;
-            rear++;
-            queue[rear] = i;
-        }
-    }
-
-    // Recursive call for the next element in the queue
-    bfsrecursive(queue, front, rear);
 }
 
-// Function to initialize BFS and handle disconnected graphs
-void bfs() {
-    int queue[MAX];         // Array used as a queue
-    int front = 0, rear = -1;
+// Function to remove and return the front element from the queue
+int dequeue() {
+    return queue[front++];
+}
 
-    // Initialize all vertices as unvisited
-    for (int i = 0; i < numVertices; i++) {
-        visited[i] = false;
+// Function to check if the queue is empty
+bool isempty() {
+    return (front == rear);
+}
+
+// Recursive BFS function
+void bfs_recursive(int n) {
+    if (isempty()) {
+        return; // Base case: stop if queue is empty
     }
+    int a = dequeue(); // Get the next vertex from the queue
+    cout << a << " "; // Print the current vertex
 
-    // Traverse all components of the graph (handles disconnected graphs)
-    for (int i = 0; i < numVertices; i++) {
-        if (!visited[i]) {
-            // Start BFS from the unvisited node
-            visited[i] = true;
-            rear++;
-            queue[rear] = i;
-
-            // Start the recursive BFS
-            bfsrecursive(queue, front, rear);
+    // Explore all adjacent vertices
+    for (int i = 0; i < n; i++) {
+        if (adj[a][i] == 1 && !visited[i]) { // Check for unvisited adjacent vertex
+            enqueue(i); // Enqueue the adjacent vertex
+            visited[i] = true; // Mark it as visited
         }
     }
+
+    // Recurse with the next vertex in the queue
+    bfs_recursive(n);
 }
 
 int main() {
-    // Take user input for number of vertices
-    cout << "Enter No. of vertices: ";
-    cin >> numVertices;
+    int start, n;
 
-    // Input the adjacency matrix
-    cout << "Enter adjacency matrix:\n";
-    for (int i = 0; i < numVertices; i++) {
-        for (int j = 0; j < numVertices; j++) {
+    cout << "Enter the number of vertices of the graph: ";
+    cin >> n; // Input number of vertices
+
+    cout << "Enter the Adjacency matrix:" << endl;
+    for (int i = 0; i < n; i++) { // Input the adjacency matrix
+        for (int j = 0; j < n; j++) {
             cin >> adj[i][j];
         }
     }
 
-    // Perform BFS traversal
-    cout << "BFS TRAVERSAL: ";
-    bfs();
+    for (int i = 0; i < n; i++) {
+        visited[i] = false; // Initialize all vertices as unvisited
+    }
+
+    cout << "Enter the starting vertex of graph: ";
+    cin >> start; // Input starting vertex
+
+    enqueue(start); // Add starting vertex to queue
+    visited[start] = true; // Mark starting vertex as visited
+
+    bfs_recursive(n); // Start recursive BFS
 
     return 0;
 }
+
+//time complexity:O(V²)
