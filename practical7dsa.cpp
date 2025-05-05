@@ -187,3 +187,6 @@ int main()
 
     cout << endl;
 }
+//time complexity:worst case-O(n2)
+                //avg case-O(nlogn)
+                //best case-1
