@@ -246,3 +246,4 @@ int main() {
     } while (ch != 5);  // Continue until the user chooses to exit
     return 0;
 }
+//time complexity:O(log n)
