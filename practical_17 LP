@@ -1,0 +1,125 @@
+// importing packages to use classes in the page replacement program
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+// creation of the main class to implement Optimal page replacement algorithm
+public class OptimalReplacement {
+
+    public static void main(String[] args) throws IOException  // fixed parameter from "pagestring[]" to "String[]"
+    {
+        // BufferedReader is used for fast input
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        int frames, pointer = 0, hit = 0, fault = 0, strng_size;
+        boolean isFull = false;   // flag to check if all frames are filled
+
+        int buffer[];             // stores currently loaded pages in memory
+        int ref[];                // stores the reference string
+        int mem_layout[][];       // stores the memory layout after each iteration
+
+        // Entering the number of frames
+        System.out.println("Enter the total number of Frames: ");
+        frames = Integer.parseInt(br.readLine());
+
+        // Entering the string size of the reference
+        System.out.println("Enter the reference string size: ");
+        strng_size = Integer.parseInt(br.readLine());
+
+        // Initialize arrays with given sizes
+        ref = new int[strng_size];           // corrected from ref_len → strng_size
+        mem_layout = new int[strng_size][frames];
+        buffer = new int[frames];
+
+        // Initialize buffer with -1 (indicating empty frames)
+        for (int j = 0; j < frames; j++)
+            buffer[j] = -1;
+
+        // Code to enter the reference string to carry out optimal page replacement
+        System.out.println("Enter the reference string: ");
+        for (int i = 0; i < strng_size; i++) {
+            ref[i] = Integer.parseInt(br.readLine());
+        }
+
+        System.out.println();
+
+        // Loop through each page in the reference string
+        for (int i = 0; i < strng_size; i++) {
+            int search = -1;
+
+            // Check if the current page already exists in the buffer (hit case)
+            for (int j = 0; j < frames; j++) {
+                if (buffer[j] == ref[i]) {
+                    search = j;
+                    hit++;
+                    break;
+                }
+            }
+
+            // If page is not found in buffer (page fault occurs)
+            if (search == -1) {
+                // If all frames are filled, perform optimal replacement
+                if (isFull) {
+                    int index[] = new int[frames];         // stores index of next use of each page
+                    boolean index_flag[] = new boolean[frames]; // marks if a page’s next use is found
+
+                    // Initialize all index values with a large number (means page not used again)
+                    for (int x = 0; x < frames; x++) {
+                        index[x] = Integer.MAX_VALUE;
+                    }
+
+                    // For each frame, find when its page will next be used
+                    for (int j = i + 1; j < strng_size; j++) {
+                        for (int k = 0; k < frames; k++) {
+                            if ((ref[j] == buffer[k]) && (!index_flag[k])) {
+                                index[k] = j;             // store next use position
+                                index_flag[k] = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Find the page that will not be used for the longest time (Optimal Replacement)
+                    int max = -1;
+                    for (int j = 0; j < frames; j++) {
+                        if (index[j] > max) {
+                            max = index[j];
+                            pointer = j;                 // replace that page
+                        }
+                    }
+                }
+
+                // Replace the selected page or fill empty slot
+                buffer[pointer] = ref[i];
+                fault++;
+
+                // Update pointer and check if all frames are full
+                if (!isFull) {
+                    pointer++;
+                    if (pointer == frames) {
+                        pointer = 0;
+                        isFull = true;
+                    }
+                }
+            }
+
+            // Store current memory layout for printing
+            for (int j = 0; j < frames; j++)
+                mem_layout[i][j] = buffer[j];
+        }
+
+        // Displaying memory layout (frames after each reference)
+        System.out.println("\nMemory Layout:");
+        for (int i = 0; i < frames; i++) {
+            for (int j = 0; j < strng_size; j++)
+                System.out.printf("%3d ", mem_layout[j][i]);
+            System.out.println();
+        }
+
+        // Display final results
+        System.out.println("Hits: " + hit);
+        System.out.println("Hit Ratio: " + (float) hit / strng_size);
+        System.out.println("Faults: " + fault);
+        System.out.println("Fault Ratio: " + (float) fault / strng_size);
+    }
+}
