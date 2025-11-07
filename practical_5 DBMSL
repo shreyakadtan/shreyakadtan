@@ -1,0 +1,65 @@
+Practical No 5
+Unnamed PL/SQL code block: Use of Control structure and Exception handling is mandatory. Write a PL/SQL block of code for the following requirements:- 
+Schema: 
+1. Borrower(Rollin, Name, DateofIssue, NameofBook, Status) 
+2. Fine(Roll_no,Date,Amt) 
+•	Accept roll_no & name of book from user. 
+•	Check the number of days (from date of issue), if days are between 15 to 30 then fine amount will be Rs 5per day. 
+•	If no. of days>30, per day fine will be Rs 50 per day & for days less than 30, Rs. 5 per day. 
+•	After submitting the book, status will change from I to R. 
+•	If condition of fine is true, then details will be stored into fine table. 
+
+
+
+
+
+**********CREATE TABLE BORR AND FINE*************************
+create table borrower(ROLLNO number(38) NOT NULL, NAME varchar2(20), DOI DATE, NOB varchar2(20), STATUS varchar2(20));
+create table fine(ROLLNO number(38), DOR DATE, AMT number(38));
+**********INSERT RECORD IN BORR TABLE******************************************
+insert into borrower values (1,'shyam',to_date('20250725','yyyymmdd'), 'CN','I');
+insert into borrower values (2,'ram',to_date('20250701','yyyymmdd'), 'dbms','I');
+insert into borrower values (3,'geeta',to_date('20250515','yyyymmdd'), 'dbms','I');
+insert into borrower values (4,'seeta',to_date('20240501','yyyymmdd'), 'SEPM','I');
+insert into borrower values (5,'rahul',to_date('20130701','yyyymmdd'), 'SEPM','I');
+insert into borrower values (6,'ganesh',to_date('20130619','yyyymmdd'), 'SEPM','I');
+
+
+
+
+************CREATE PROCEDURE BOOK***********************
+create or replace procedure book(r in number)
+as
+c number;
+begin
+select to_number(trunc(sysdate-doi)) into c from Borrower  where rollno=r;
+if c >=15 and c<=30 then
+c:=c-15;
+insert into fine values (r,sysdate,'');
+update fine set amt=c*5 where rollno=r;
+elsif c>30 then 
+c:=c-30;
+insert into fine values (r,sysdate,'');
+update fine set amt=(c*50)+75 where rollno=r;
+end if;
+
+update Borrower set status='R' where rollno=r; 
+EXCEPTION
+WHEN no_data_found THEN
+dbms_output.put_line('No such Rollno !');
+end;
+/
+*****For Execute Procedure********
+Execute book(6);
+select * from fine;
+  ROLLNO    DOR              AMT
+---------- --------- ----------
+         6     19-JUL-18         75
+***************************************************************************
+select * from borr;
+ ROLLNO  NAME                 DOI         NOB		STATUS
+---------- -------------------- --------- ----------------------------------------
+     3   seeta                17-AUG-17   SEPM		I
+     5    rahul                01-JUL-18    SEPM		R		
+     6    ganesh               19-JUN-18  SEPM		R
+*************************************************************************************
