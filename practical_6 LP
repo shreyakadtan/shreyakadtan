@@ -1,0 +1,140 @@
+import java.util.*;
+
+// Class to represent each process in the scheduling algorithms
+class Process {
+    int pid;               // Process ID
+    int arrivalTime;       // When the process arrives
+    int burstTime;         // How long the process needs the CPU
+    int priority;          // Process priority (lower number = higher priority)
+    int completionTime;    // Time when the process completes execution
+    int waitingTime;       // Waiting time = Turnaround - Burst
+    int turnaroundTime;    // Turnaround time = Completion - Arrival
+
+    // Constructor to initialize process details
+    public Process(int pid, int arrivalTime, int burstTime, int priority) {
+        this.pid = pid;
+        this.arrivalTime = arrivalTime;
+        this.burstTime = burstTime;
+        this.priority = priority;
+    }
+}
+
+public class SchedulingSimulation {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // Step 1: Take total number of processes as input
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+
+        Process[] processes = new Process[n];
+
+        // Step 2: Take details for each process
+        for (int i = 0; i < n; i++) {
+            System.out.println("\nEnter details for Process " + (i + 1));
+            System.out.print("Arrival Time: ");
+            int at = sc.nextInt();
+            System.out.print("Burst Time: ");
+            int bt = sc.nextInt();
+            System.out.print("Priority (lower number = higher priority): ");
+            int pr = sc.nextInt();
+
+            processes[i] = new Process(i + 1, at, bt, pr);
+        }
+
+        // Step 3: Run both scheduling algorithms
+        System.out.println("\n===== FCFS Scheduling =====");
+        fcfs(processes.clone());  // First Come First Serve
+
+        System.out.println("\n===== Priority Scheduling =====");
+        priorityScheduling(processes.clone());  // Non-preemptive Priority Scheduling
+
+        sc.close();
+    }
+
+    // ------------------ FCFS ALGORITHM ------------------
+    static void fcfs(Process[] p) {
+        // Sort processes by Arrival Time
+        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime));
+        int currentTime = 0;  // Keeps track of CPU time
+
+        // Calculate Completion, Turnaround, and Waiting Times
+        for (Process pr : p) {
+            if (currentTime < pr.arrivalTime)
+                currentTime = pr.arrivalTime;  // CPU idle until process arrives
+
+            pr.completionTime = currentTime + pr.burstTime;
+            pr.turnaroundTime = pr.completionTime - pr.arrivalTime;
+            pr.waitingTime = pr.turnaroundTime - pr.burstTime;
+
+            currentTime = pr.completionTime; // Move CPU clock forward
+        }
+
+        // Display results
+        display(p);
+    }
+
+    // ------------------ PRIORITY SCHEDULING ------------------
+    static void priorityScheduling(Process[] p) {
+        // Sort by arrival time first
+        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime));
+
+        int currentTime = 0;
+        List<Process> completed = new ArrayList<>();
+
+        // Continue until all processes are executed
+        while (completed.size() < p.length) {
+            // Step 1: Collect all processes that have arrived so far
+            List<Process> ready = new ArrayList<>();
+            for (Process pr : p)
+                if (!completed.contains(pr) && pr.arrivalTime <= currentTime)
+                    ready.add(pr);
+
+            // Step 2: If no process is ready, increment time (CPU idle)
+            if (ready.isEmpty()) {
+                currentTime++;
+                continue;
+            }
+
+            // Step 3: Select process with highest priority (lowest priority number)
+            Process next = Collections.min(ready, Comparator.comparingInt(x -> x.priority));
+
+            // Step 4: Calculate completion, turnaround, and waiting times
+            currentTime += next.burstTime;
+            next.completionTime = currentTime;
+            next.turnaroundTime = next.completionTime - next.arrivalTime;
+            next.waitingTime = next.turnaroundTime - next.burstTime;
+
+            // Step 5: Mark process as completed
+            completed.add(next);
+        }
+
+        // Display results
+        display(p);
+    }
+
+    // ------------------ DISPLAY FUNCTION ------------------
+    static void display(Process[] p) {
+        // Print table header
+        System.out.println("\nPID\tAT\tBT\tPR\tCT\tTAT\tWT");
+
+        // Print details for each process
+        for (Process pr : p) {
+            System.out.printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+                    pr.pid, pr.arrivalTime, pr.burstTime, pr.priority,
+                    pr.completionTime, pr.turnaroundTime, pr.waitingTime);
+        }
+
+        // Optionally, you can also calculate and print averages
+        double avgTAT = 0, avgWT = 0;
+        for (Process pr : p) {
+            avgTAT += pr.turnaroundTime;
+            avgWT += pr.waitingTime;
+        }
+        avgTAT /= p.length;
+        avgWT /= p.length;
+
+        System.out.printf("\nAverage Turnaround Time: %.2f", avgTAT);
+        System.out.printf("\nAverage Waiting Time: %.2f\n", avgWT);
+    }
+}
