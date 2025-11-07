@@ -1,0 +1,74 @@
+Practical No. 1 — SQL DDL Statements: College Library Management System
+1. Create Database
+CREATE DATABASE CollegeLibrary;
+USE CollegeLibrary;
+________________________________________
+2. Create Tables
+(a) Student Table
+CREATE TABLE Student (
+    StudentID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30),
+    Year INT CHECK (Year BETWEEN 1 AND 4),
+    Email VARCHAR(50) UNIQUE
+);
+(b) Book Table
+CREATE TABLE Book (
+    BookID INT PRIMARY KEY,
+    Title VARCHAR(100) NOT NULL,
+    Author VARCHAR(50),
+    Publisher VARCHAR(50),
+    Price DECIMAL(8,2) CHECK (Price > 0),
+    Availability CHAR(1) DEFAULT 'Y'  -- Y = Available, N = Not Available
+);
+(c) Transaction Table
+CREATE TABLE Transaction (
+    TransID INT PRIMARY KEY,
+    StudentID INT,
+    BookID INT,
+    IssueDate DATE NOT NULL,
+    ReturnDate DATE,
+    Status VARCHAR(10) CHECK (Status IN ('Issued', 'Returned')),
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID),
+    FOREIGN KEY (BookID) REFERENCES Book(BookID)
+);
+________________________________________
+3. Create a View
+(View showing issued books with student details)
+CREATE VIEW Issued_Books AS
+SELECT S.Name AS StudentName, B.Title AS BookTitle, T.IssueDate, T.Status
+FROM Transaction T
+JOIN Student S ON T.StudentID = S.StudentID
+JOIN Book B ON T.BookID = B.BookID
+WHERE T.Status = 'Issued';
+________________________________________
+4. Create an Index
+(Create index on Book title for faster search)
+CREATE INDEX idx_book_title ON Book (Title);
+________________________________________
+5. Create a Sequence
+(For auto-generating transaction IDs – syntax varies by RDBMS)
+Oracle Example:
+CREATE SEQUENCE seq_trans_id
+START WITH 1001
+INCREMENT BY 1
+NOCACHE;
+To use in INSERT:
+INSERT INTO Transaction (TransID, StudentID, BookID, IssueDate, Status)
+VALUES (seq_trans_id.NEXTVAL, 1, 101, SYSDATE, 'Issued');
+________________________________________
+6. Create a Synonym
+Oracle Example:
+CREATE SYNONYM LibBook FOR Book;
+This allows you to use LibBook instead of Book in queries.
+________________________________________
+7. Sample Data Insertion
+INSERT INTO Student VALUES (1, 'Amit Sharma', 'Computer', 3, 'amit@gmail.com');
+INSERT INTO Student VALUES (2, 'Sneha Patil', 'IT', 2, 'sneha@gmail.com');
+
+INSERT INTO Book VALUES (101, 'Database Systems', 'Elmasri', 'Pearson', 550.00, 'Y');
+INSERT INTO Book VALUES (102, 'Operating Systems', 'Silberschatz', 'Wiley', 620.00, 'Y');
+________________________________________
+8. Verify the View
+SELECT * FROM Issued_Books;
+
