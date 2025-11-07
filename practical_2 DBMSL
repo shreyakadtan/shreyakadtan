@@ -1,0 +1,108 @@
+Practical No. 2 — SQL DML Queries: Student Result Management System
+________________________________________
+1. Create Database
+CREATE DATABASE StudentResultDB;
+USE StudentResultDB;
+________________________________________
+2. Create Tables
+(a) Student Table
+CREATE TABLE Student (
+    StudentID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30),
+    Year INT,
+    Email VARCHAR(50)
+);
+(b) Marks Table
+CREATE TABLE Marks (
+    MarkID INT PRIMARY KEY,
+    StudentID INT,
+    Subject VARCHAR(50),
+    MarksObtained INT CHECK (MarksObtained BETWEEN 0 AND 100),
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
+);
+(c) Result Table
+CREATE TABLE Result (
+    ResultID INT PRIMARY KEY,
+    StudentID INT,
+    TotalMarks INT,
+    Percentage DECIMAL(5,2),
+    Grade CHAR(2),
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
+);
+________________________________________
+3. Insert Sample Data
+INSERT INTO Student VALUES
+(1, 'Amit Sharma', 'Computer', 3, 'amit@gmail.com'),
+(2, 'Sneha Patil', 'IT', 2, 'sneha@gmail.com'),
+(3, 'Rahul Deshmukh', 'ENTC', 3, 'rahul@gmail.com');
+
+INSERT INTO Marks VALUES
+(1, 1, 'DBMS', 85),
+(2, 1, 'DSA', 78),
+(3, 2, 'DBMS', 67),
+(4, 2, 'DSA', 72),
+(5, 3, 'DBMS', 90),
+(6, 3, 'DSA', 88);
+________________________________________
+4. SQL DML Queries
+Query 1 — Display all student details
+SELECT * FROM Student;
+________________________________________
+Query 2 — Update student email address
+UPDATE Student
+SET Email = 'amitsharma123@gmail.com'
+WHERE StudentID = 1;
+________________________________________
+Query 3 — Delete a student record
+DELETE FROM Student
+WHERE StudentID = 3;
+________________________________________
+Query 4 — Select students who scored more than 70 marks in any subject
+SELECT StudentID, Subject, MarksObtained
+FROM Marks
+WHERE MarksObtained > 70;
+________________________________________
+Query 5 — Find total and average marks for each student
+SELECT StudentID,
+       SUM(MarksObtained) AS TotalMarks,
+       AVG(MarksObtained) AS AverageMarks
+FROM Marks
+GROUP BY StudentID;
+________________________________________
+Query 6 — Use arithmetic operator (calculate 5% grace marks)
+SELECT StudentID, Subject,
+       MarksObtained,
+       (MarksObtained + (MarksObtained * 0.05)) AS MarksWithGrace
+FROM Marks;
+________________________________________
+Query 7 — Use logical operator (students with marks between 70 and 90)
+SELECT * FROM Marks
+WHERE MarksObtained >= 70 AND MarksObtained <= 90;
+________________________________________
+Query 8 — Use comparison and built-in function (UPPER, LENGTH)
+SELECT StudentID, UPPER(Name) AS UpperCaseName, LENGTH(Name) AS NameLength
+FROM Student;
+________________________________________
+Query 9 — Use SET Operator (find students who have appeared for DBMS or DSA)
+SELECT StudentID FROM Marks WHERE Subject = 'DBMS'
+UNION
+SELECT StudentID FROM Marks WHERE Subject = 'DSA';
+________________________________________
+Query 10 — Insert computed result into Result table
+INSERT INTO Result (ResultID, StudentID, TotalMarks, Percentage, Grade)
+SELECT ROW_NUMBER() OVER () AS ResultID,
+       StudentID,
+       SUM(MarksObtained) AS TotalMarks,
+       AVG(MarksObtained) AS Percentage,
+       CASE
+            WHEN AVG(MarksObtained) >= 75 THEN 'A'
+            WHEN AVG(MarksObtained) >= 60 THEN 'B'
+            ELSE 'C'
+       END AS Grade
+FROM Marks
+GROUP BY StudentID;
+________________________________________
+5. Verify Results
+SELECT * FROM Result;
+________________________________________
