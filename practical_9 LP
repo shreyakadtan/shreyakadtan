@@ -1,0 +1,188 @@
+import java.util.*;
+
+// Class to represent each process
+class Process {
+    int pid;             // Process ID
+    int arrivalTime;     // Arrival time
+    int burstTime;       // Burst time
+    int priority;        // Priority (lower number = higher priority)
+    int remainingTime;   // Used for RR
+    int completionTime;  // Completion time
+    int waitingTime;     // Waiting time
+    int turnaroundTime;  // Turnaround time
+
+    Process(int pid, int at, int bt, int pr) {
+        this.pid = pid;
+        this.arrivalTime = at;
+        this.burstTime = bt;
+        this.priority = pr;
+        this.remainingTime = bt;
+    }
+}
+
+public class SchedulingSimulation {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // Step 1: Input process details
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+        Process[] processes = new Process[n];
+
+        for (int i = 0; i < n; i++) {
+            System.out.println("\nEnter details for Process " + (i + 1));
+            System.out.print("Arrival Time: ");
+            int at = sc.nextInt();
+            System.out.print("Burst Time: ");
+            int bt = sc.nextInt();
+            System.out.print("Priority (lower = higher priority): ");
+            int pr = sc.nextInt();
+            processes[i] = new Process(i + 1, at, bt, pr);
+        }
+
+        // Step 2: Run both algorithms
+        System.out.println("\n===== Priority (Non-Preemptive) Scheduling =====");
+        priorityScheduling(processes.clone());
+
+        System.out.println("\n===== Round Robin Scheduling =====");
+        rrScheduling(processes.clone(), sc);
+
+        sc.close();
+    }
+
+    // ------------------------------------------------------------
+    // PRIORITY SCHEDULING (Non-Preemptive)
+    // ------------------------------------------------------------
+    static void priorityScheduling(Process[] p) {
+        int n = p.length;
+        int completed = 0, time = 0;
+        int totalWT = 0, totalTAT = 0;
+        boolean[] done = new boolean[n];
+        List<String> gantt = new ArrayList<>();
+
+        while (completed < n) {
+            int idx = -1;
+            int bestPriority = Integer.MAX_VALUE;
+
+            // Find the process with the highest priority that has arrived
+            for (int i = 0; i < n; i++) {
+                if (!done[i] && p[i].arrivalTime <= time && p[i].priority < bestPriority) {
+                    bestPriority = p[i].priority;
+                    idx = i;
+                }
+            }
+
+            if (idx == -1) { // No process is ready
+                time++;
+                continue;
+            }
+
+            gantt.add("P" + p[idx].pid);
+
+            time += p[idx].burstTime;
+            p[idx].completionTime = time;
+            p[idx].turnaroundTime = p[idx].completionTime - p[idx].arrivalTime;
+            p[idx].waitingTime = p[idx].turnaroundTime - p[idx].burstTime;
+
+            totalWT += p[idx].waitingTime;
+            totalTAT += p[idx].turnaroundTime;
+            done[idx] = true;
+            completed++;
+        }
+
+        // Display output table
+        System.out.println("\nPID\tAT\tBT\tPR\tCT\tTAT\tWT");
+        for (Process pr : p) {
+            System.out.printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+                    pr.pid, pr.arrivalTime, pr.burstTime, pr.priority,
+                    pr.completionTime, pr.turnaroundTime, pr.waitingTime);
+        }
+
+        // Print averages
+        System.out.printf("\nAverage Waiting Time: %.2f\n", (double) totalWT / n);
+        System.out.printf("Average Turnaround Time: %.2f\n", (double) totalTAT / n);
+
+        // Print Gantt Chart
+        System.out.println("\nGantt Chart:");
+        System.out.print("| ");
+        for (String s : gantt) System.out.print(s + " | ");
+        System.out.println();
+    }
+
+    // ------------------------------------------------------------
+    // ROUND ROBIN SCHEDULING
+    // ------------------------------------------------------------
+    static void rrScheduling(Process[] p, Scanner sc) {
+        System.out.print("\nEnter Time Quantum: ");
+        int quantum = sc.nextInt();
+
+        int n = p.length;
+        int time = 0, completed = 0;
+        int totalWT = 0, totalTAT = 0;
+        Queue<Process> queue = new LinkedList<>();
+        List<String> gantt = new ArrayList<>();
+
+        // Sort processes by arrival time
+        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime));
+        queue.add(p[0]);
+        int i = 1;
+
+        while (completed < n) {
+            if (queue.isEmpty()) {
+                if (i < n) {
+                    time = p[i].arrivalTime;
+                    queue.add(p[i]);
+                    i++;
+                }
+                continue;
+            }
+
+            Process current = queue.poll();
+            gantt.add("P" + current.pid);
+
+            // Execute for quantum or until completion
+            if (current.remainingTime > quantum) {
+                current.remainingTime -= quantum;
+                time += quantum;
+            } else {
+                time += current.remainingTime;
+                current.remainingTime = 0;
+                current.completionTime = time;
+                current.turnaroundTime = current.completionTime - current.arrivalTime;
+                current.waitingTime = current.turnaroundTime - current.burstTime;
+                totalWT += current.waitingTime;
+                totalTAT += current.turnaroundTime;
+                completed++;
+            }
+
+            // Add new arrivals to queue
+            while (i < n && p[i].arrivalTime <= time) {
+                queue.add(p[i]);
+                i++;
+            }
+
+            // If current process is not done, re-add it
+            if (current.remainingTime > 0)
+                queue.add(current);
+        }
+
+        // Display output table
+        System.out.println("\nPID\tAT\tBT\tPR\tCT\tTAT\tWT");
+        for (Process pr : p) {
+            System.out.printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+                    pr.pid, pr.arrivalTime, pr.burstTime, pr.priority,
+                    pr.completionTime, pr.turnaroundTime, pr.waitingTime);
+        }
+
+        // Print averages
+        System.out.printf("\nAverage Waiting Time: %.2f\n", (double) totalWT / n);
+        System.out.printf("Average Turnaround Time: %.2f\n", (double) totalTAT / n);
+
+        // Print Gantt Chart
+        System.out.println("\nGantt Chart:");
+        System.out.print("| ");
+        for (String s : gantt) System.out.print(s + " | ");
+        System.out.println();
+    }
+}
