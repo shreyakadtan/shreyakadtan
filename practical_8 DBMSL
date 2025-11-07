@@ -1,0 +1,59 @@
+MongoDB CRUD Operations for Online Shopping Application
+Collections Used:
+•	Customers
+•	Products
+•	Orders
+________________________________________
+1. Create Database
+use OnlineShoppingDB
+________________________________________
+2. Create and Insert Documents
+(a) Insert Customers
+db.Customers.insertMany([
+  { CustomerID: 1, Name: "Amit Sharma", City: "Pune", Email: "amit@gmail.com" },
+  { CustomerID: 2, Name: "Sneha Patil", City: "Mumbai", Email: "sneha@gmail.com" },
+  { CustomerID: 3, Name: "Rahul Deshmukh", City: "Nashik", Email: "rahul@gmail.com" }
+])
+(b) Insert Products
+db.Products.insertMany([
+  { ProductID: 101, Name: "Laptop", Price: 55000, Brand: "HP", Stock: 10 },
+  { ProductID: 102, Name: "Mobile", Price: 20000, Brand: "Samsung", Stock: 15 },
+  { ProductID: 103, Name: "Headphones", Price: 1500, Brand: "Boat", Stock: 25 }
+])
+(c) Insert Orders
+db.Orders.insertMany([
+  { OrderID: 501, CustomerID: 1, ProductID: 101, Quantity: 1, Total: 55000 },
+  { OrderID: 502, CustomerID: 2, ProductID: 103, Quantity: 2, Total: 3000 }
+])
+________________________________________
+3. Read (Retrieve Data)
+(a) Display all customers
+db.Customers.find().pretty()
+(b) Display products with price greater than ₹5000
+db.Products.find({ Price: { $gt: 5000 } })
+(c) Display customers from Pune or Mumbai (using logical operator)
+db.Customers.find({ $or: [ { City: "Pune" }, { City: "Mumbai" } ] })
+________________________________________
+4. Update Documents
+(a) Update product price
+db.Products.updateOne(
+  { ProductID: 103 },
+  { $set: { Price: 1800 } }
+)
+(b) Increase stock quantity of mobiles by 5
+db.Products.updateOne(
+  { Name: "Mobile" },
+  { $inc: { Stock: 5 } }
+)
+________________________________________
+5. Delete Documents
+(a) Delete a customer record
+db.Customers.deleteOne({ CustomerID: 3 })
+(b) Delete all products with price less than ₹2000
+db.Products.deleteMany({ Price: { $lt: 2000 } })
+________________________________________
+6. Save() Method Example
+var prod = { ProductID: 104, Name: "Smart Watch", Price: 4500, Brand: "Noise", Stock: 12 }
+db.Products.save(prod)
+The save() method will insert the document if it doesn’t exist or update it if it already exists.
+
