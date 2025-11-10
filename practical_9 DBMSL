@@ -2,6 +2,7 @@
 switched to db demo
 db.orders.insert({cust_id:"A123",amount: 500, status:'A'})
 WriteResult({ "nInserted" : 1 })
+//db.orders.find() -> you’ll see the inserted document.
 
 db.orders.insert({cust_id:"A123",amount: 250, status:'A'})
 WriteResult({ "nInserted" : 1 })
