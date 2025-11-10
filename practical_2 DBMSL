@@ -55,6 +55,8 @@ SET Email = 'amitsharma123@gmail.com'
 WHERE StudentID = 1;
 ________________________________________
 Query 3 — Delete a student record
+DELETE FROM Marks WHERE StudentID = 3;
+DELETE FROM Result WHERE StudentID = 3;
 DELETE FROM Student
 WHERE StudentID = 3;
 ________________________________________
