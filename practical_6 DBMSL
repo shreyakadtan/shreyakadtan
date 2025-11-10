@@ -1,35 +1,41 @@
-Practical No:6
-
-Write a PL/SQL block of code using parameterized Cursor, that will merge the data available in the newly created table N_RollCall with the data available in the table O_RollCall. If the data in the first table already exist in the second table then that data should be skipped.
-
-
-create table info(rollno number(20), name varchar2(20), branch varchar2(20));
-create table info1(rollno number(20), name varchar2(20), branch varchar2(20));
-
-insert into info values(1, 'Om' , 'Computer');
-insert into info values (2, 'Raj' , 'Mech');
-insert into info values (3, 'Sai' , 'ECE');
-insert into info1 values (5, 'Rahul' , 'IT');
-insert into info1 values (2, 'Raj' , 'Mech');
-insert into info1 values (6, 'Pravin' , 'Comp');
+//create table
+CREATE TABLE Library (
+    rollno NUMBER(10),
+    name VARCHAR2(50),
+    bookname VARCHAR2(100)
+);
 
 
+CREATE TABLE Library_Audit (
+    rollno NUMBER(10),
+    name VARCHAR2(50),
+    bookname VARCHAR2(100)
+);
 
 
-
-declare
-rn info.rollno%type;
-nm info.name%type;
-br info.branch%type;
-cursor c_info is select * from info minus select * from info1;
-begin
-open c_info;
-loop
-fetch c_info into rn,nm,br;
-exit when c_info%notfound;
-insert into info1 values(rn,nm,br);
-end loop;
-close c_info;
-end;
+//Trigger
+CREATE OR REPLACE TRIGGER libtrig
+AFTER DELETE OR UPDATE ON Library
+REFERENCING OLD AS o NEW AS n
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit
+    VALUES(:o.rollno, :o.name, :o.bookname);
+END;
 /
 
+
+//Insert sample data
+INSERT INTO Library VALUES (1, 'Soham', 'DBMS');
+INSERT INTO Library VALUES (2, 'Amit', 'Java');
+COMMIT;
+
+// Update and Delete
+UPDATE Library SET bookname='Python' WHERE rollno=1;
+DELETE FROM Library WHERE rollno=2;
+
+// View audit log
+SELECT * FROM Library_Audit;
+
+
+show errors trigger Library_Audit;
