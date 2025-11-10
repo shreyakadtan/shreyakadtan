@@ -45,6 +45,7 @@ ________________________________________
 4. Create an Index
 (Create index on Book title for faster search)
 CREATE INDEX idx_book_title ON Book (Title);
+//to see- SHOW INDEX FROM Book;
 ________________________________________
 5. Create a Sequence
 (For auto-generating transaction IDs – syntax varies by RDBMS)
