@@ -10,6 +10,7 @@ class Process {
     int waitingTime;       // Waiting Time
     int turnaroundTime;    // Turnaround Time
 
+    //Constructor that initializes values.
     public Process(int pid, int arrivalTime, int burstTime) {
         this.pid = pid;
         this.arrivalTime = arrivalTime;
@@ -20,12 +21,12 @@ class Process {
 
 public class SchedulingSimulation {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in); //SchedulingSimulation is our main class.Inside main, we create a Scanner to take user input.
 
         // Step 1: Input process details
         System.out.print("Enter number of processes: ");
         int n = sc.nextInt();
-        Process[] processes = new Process[n];
+        Process[] processes = new Process[n]; //Ask user for total number of processes n
 
         for (int i = 0; i < n; i++) {
             System.out.println("\nEnter details for Process " + (i + 1));
@@ -33,14 +34,14 @@ public class SchedulingSimulation {
             int at = sc.nextInt();
             System.out.print("Burst Time: ");
             int bt = sc.nextInt();
-            processes[i] = new Process(i + 1, at, bt);
+            processes[i] = new Process(i + 1, at, bt); //Loop takes arrival and burst time for each process and stores it.
         }
 
         // Step 2: Run algorithms
-        System.out.println("\n===== FCFS Scheduling =====");
-        fcfs(processes.clone());
+        System.out.println("\n===== FCFS Scheduling ====="); //Calls the FCFS scheduling function
+        fcfs(processes.clone()); //We use .clone() so the same original data can also be reused for SJF.
 
-        System.out.println("\n===== SJF (Preemptive) Scheduling =====");
+        System.out.println("\n===== SJF (Preemptive) Scheduling ====="); //call SJF Preemptive function
         sjfPreemptive(processes.clone());
 
         sc.close();
@@ -48,21 +49,21 @@ public class SchedulingSimulation {
 
     // ------------------ FCFS ALGORITHM ------------------
     static void fcfs(Process[] p) {
-        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime));
+        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime)); //Sort all processes by their arrival time
         int currentTime = 0;
 
         for (Process pr : p) {
             if (currentTime < pr.arrivalTime)
-                currentTime = pr.arrivalTime;
+                currentTime = pr.arrivalTime; //Initialize currentTime
 
             pr.completionTime = currentTime + pr.burstTime;
             pr.turnaroundTime = pr.completionTime - pr.arrivalTime;
             pr.waitingTime = pr.turnaroundTime - pr.burstTime;
 
-            currentTime = pr.completionTime;
+            currentTime = pr.completionTime; //Then update currentTime
         }
 
-        display(p);
+        display(p); //Call display function to print results.
     }
 
     // ------------------ SJF (PREEMPTIVE) ALGORITHM ------------------
@@ -74,14 +75,14 @@ public class SchedulingSimulation {
         // Continue until all processes complete
         while (completed != n) {
             // Step 1: Find process with shortest remaining time among those that have arrived
-            int idx = -1, minRemaining = Integer.MAX_VALUE;
+            int idx = -1, minRemaining = Integer.MAX_VALUE; //idx = index of process with shortest remaining time.
             for (int i = 0; i < n; i++) {
                 if (p[i].arrivalTime <= currentTime && !isCompleted[i]) {
                     if (p[i].remainingTime < minRemaining) {
                         minRemaining = p[i].remainingTime;
                         idx = i;
                     }
-                    // If tie → choose one with earlier arrival
+                    // If two have equal remaining time → choose the one that came earlier.
                     else if (p[i].remainingTime == minRemaining && p[i].arrivalTime < p[idx].arrivalTime) {
                         idx = i;
                     }
@@ -112,11 +113,11 @@ public class SchedulingSimulation {
 
     // ------------------ DISPLAY FUNCTION ------------------
     static void display(Process[] p) {
-        System.out.println("\nPID\tAT\tBT\tCT\tTAT\tWT");
+        System.out.println("\nPID\tAT\tBT\tCT\tTAT\tWT"); //Prints table headers.
         for (Process pr : p) {
             System.out.printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
                     pr.pid, pr.arrivalTime, pr.burstTime,
-                    pr.completionTime, pr.turnaroundTime, pr.waitingTime);
+                    pr.completionTime, pr.turnaroundTime, pr.waitingTime); //Prints details of each process.
         }
 
         // Calculate and display averages
