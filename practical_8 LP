@@ -24,7 +24,7 @@ public class SchedulingSimulation {
         // Step 1: Take input
         System.out.print("Enter number of processes: ");
         int n = sc.nextInt();
-        Process[] processes = new Process[n];
+        Process[] processes = new Process[n]; //Ask user for total number of processes n
 
         for (int i = 0; i < n; i++) {
             System.out.println("\nEnter details for Process " + (i + 1));
@@ -32,14 +32,14 @@ public class SchedulingSimulation {
             int at = sc.nextInt();
             System.out.print("Burst Time: ");
             int bt = sc.nextInt();
-            processes[i] = new Process(i + 1, at, bt);
+            processes[i] = new Process(i + 1, at, bt); //Loop takes arrival and burst time for each process and stores it.
         }
 
         // Step 2: Run both algorithms
-        System.out.println("\n===== SJF (Preemptive) Scheduling =====");
-        sjfPreemptive(processes.clone());
+        System.out.println("\n===== SJF (Preemptive) Scheduling ====="); //Calls the SJF scheduling function
+        sjfPreemptive(processes.clone()); ////We use .clone() so the same original data can also be reused for RR.
 
-        System.out.println("\n===== Round Robin Scheduling =====");
+        System.out.println("\n===== Round Robin Scheduling ====="); //Calls the RR scheduling function
         rr(processes.clone(), sc);
 
         sc.close();
@@ -51,9 +51,9 @@ public class SchedulingSimulation {
         int completed = 0, time = 0;
         int totalWT = 0, totalTAT = 0;
         boolean[] isDone = new boolean[n];
-        List<String> gantt = new ArrayList<>();
+        List<String> gantt = new ArrayList<>(); // At the start, time = 0, no process is completed, and all are waiting.
 
-        while (completed < n) {
+        while (completed < n) { //This loop continues until all n processes are completed.
             int idx = -1;
             int minBurst = Integer.MAX_VALUE;
 
@@ -88,40 +88,40 @@ public class SchedulingSimulation {
         }
 
         // Display results
-        System.out.println("\nPID\tAT\tBT\tCT\tTAT\tWT");
+        System.out.println("\nPID\tAT\tBT\tCT\tTAT\tWT"); //Prints table headers.
         for (Process pr : p) {
             System.out.printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
                     pr.pid, pr.arrivalTime, pr.burstTime,
-                    pr.completionTime, pr.turnaroundTime, pr.waitingTime);
+                    pr.completionTime, pr.turnaroundTime, pr.waitingTime); //Prints details of each process.
         }
 
-        System.out.printf("\nAverage Waiting Time: %.2f\n", (double) totalWT / n);
+        System.out.printf("\nAverage Waiting Time: %.2f\n", (double) totalWT / n); // Cal Avg
         System.out.printf("Average Turnaround Time: %.2f\n", (double) totalTAT / n);
 
         // Gantt Chart
         System.out.println("\nGantt Chart:");
         System.out.print("| ");
-        for (String s : gantt) System.out.print(s + " | ");
+        for (String s : gantt) System.out.print(s + " | "); // The Gantt Chart visually shows the order of CPU execution:
         System.out.println();
     }
 
     // -------------------- Round Robin Scheduling --------------------
     static void rr(Process[] p, Scanner sc) {
         System.out.print("\nEnter Time Quantum: ");
-        int quantum = sc.nextInt();
+        int quantum = sc.nextInt(); //Asks the user to enter the time quantum
 
         int n = p.length;
         int time = 0, completed = 0;
         int totalWT = 0, totalTAT = 0;
-        Queue<Process> queue = new LinkedList<>();
+        Queue<Process> queue = new LinkedList<>(); //The ready queue (FIFO) implemented with a LinkedList.
         List<String> gantt = new ArrayList<>();
 
-        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime));
+        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime)); //Sort processes by arrival time so we can add them to the queue in arrival order.
         queue.add(p[0]);
         int i = 1;
 
         while (completed < n) {
-            if (queue.isEmpty()) {
+            if (queue.isEmpty()) { //If the ready queue is empty but there are still processes that will arrive later:Jump time forward to the arrival time of the next process Add that arriving process into the queue and move i forward.
                 if (i < n) {
                     time = p[i].arrivalTime;
                     queue.add(p[i]);
@@ -130,8 +130,8 @@ public class SchedulingSimulation {
                 continue;
             }
 
-            Process current = queue.poll();
-            gantt.add("P" + current.pid);
+            Process current = queue.poll(); //poll() removes and returns the process at the front of the queue
+            gantt.add("P" + current.pid); //We add its id to the gantt list to record the execution order.
 
             if (current.remainingTime > quantum) {
                 current.remainingTime -= quantum;
