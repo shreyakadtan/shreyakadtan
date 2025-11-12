@@ -1,35 +1,45 @@
-import java.util.*;
+import java.util.*; // Import Java utilities like Scanner, ArrayList, etc.
 
-// Class to represent a process
+// ===============================================
+// Class: Process
+// Represents one process in CPU scheduling
+// ===============================================
 class Process {
-    int pid;             // Process ID
-    int arrivalTime;     // Arrival time
-    int burstTime;       // Burst time
-    int priority;        // Priority (lower = higher priority)
-    int completionTime;  // Completion time
-    int turnaroundTime;  // Turnaround time
-    int waitingTime;     // Waiting time
-    boolean done;        // Whether completed
+    int pid;             // Process ID (e.g., P1, P2, P3)
+    int arrivalTime;     // Time at which process arrives in the ready queue
+    int burstTime;       // Time required by process to complete execution
+    int priority;        // Priority value (lower number = higher priority)
+    int completionTime;  // Time when process finishes execution
+    int turnaroundTime;  // Total time from arrival to completion (CT - AT)
+    int waitingTime;     // Total time process spent waiting (TAT - BT)
+    boolean done;        // True when the process is completed
 
+    // Constructor to initialize process details
     Process(int pid, int at, int bt, int pr) {
         this.pid = pid;
         this.arrivalTime = at;
         this.burstTime = bt;
         this.priority = pr;
-        this.done = false;
+        this.done = false;  // Initially, process is not completed
     }
 }
 
+// ===============================================
+// Main Class: SchedulingSimulation
+// Contains both algorithms: Priority and SJF
+// ===============================================
 public class SchedulingSimulation {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        // Step 1: Take input
+        // ------------------ STEP 1: Take Input ------------------
         System.out.print("Enter number of processes: ");
-        int n = sc.nextInt();
+        int n = sc.nextInt(); // total number of processes
 
-        Process[] processes = new Process[n];
+        Process[] processes = new Process[n]; // Array to store all processes
+
+        // Take input for each process
         for (int i = 0; i < n; i++) {
             System.out.println("\nEnter details for Process " + (i + 1));
             System.out.print("Arrival Time: ");
@@ -38,58 +48,65 @@ public class SchedulingSimulation {
             int bt = sc.nextInt();
             System.out.print("Priority (lower = higher priority): ");
             int pr = sc.nextInt();
+
+            // Create a process object and store it in array
             processes[i] = new Process(i + 1, at, bt, pr);
         }
 
-        // Step 2: Run both scheduling algorithms
+        // ------------------ STEP 2: Run Scheduling Algorithms ------------------
         System.out.println("\n===== Priority (Non-Preemptive) Scheduling =====");
-        priorityScheduling(processes.clone());
+        priorityScheduling(processes.clone());  // Clone to avoid data mix-up
 
         System.out.println("\n===== Shortest Job First (Non-Preemptive) Scheduling =====");
-        sjfScheduling(processes.clone());
+        sjfScheduling(processes.clone());       // Clone again for SJF
 
-        sc.close();
+        sc.close(); // close the scanner
     }
 
-    // ------------------------------------------------------------
+    // =====================================================================
     // PRIORITY SCHEDULING (NON-PREEMPTIVE)
-    // ------------------------------------------------------------
+    // =====================================================================
     static void priorityScheduling(Process[] p) {
-        int n = p.length;
-        int completed = 0, time = 0;
-        int totalWT = 0, totalTAT = 0;
-        List<String> gantt = new ArrayList<>();
+        int n = p.length;              // total number of processes
+        int completed = 0;             // count how many are finished
+        int time = 0;                  // current time (CPU clock)
+        int totalWT = 0, totalTAT = 0; // totals for average calculation
+        List<String> gantt = new ArrayList<>(); // to store execution order
 
+        // Loop until all processes are completed
         while (completed < n) {
-            int idx = -1;
-            int bestPriority = Integer.MAX_VALUE;
+            int idx = -1;                 // index of process to be selected next
+            int bestPriority = Integer.MAX_VALUE; // smallest number = highest priority
 
-            // Find process with highest priority that has arrived
+            // Step 1: Find process with highest priority that has already arrived
             for (int i = 0; i < n; i++) {
                 if (!p[i].done && p[i].arrivalTime <= time && p[i].priority < bestPriority) {
                     bestPriority = p[i].priority;
-                    idx = i;
+                    idx = i; // select this process
                 }
             }
 
+            // Step 2: If no process is ready, increase time by 1 (CPU idle)
             if (idx == -1) {
                 time++;
                 continue;
             }
 
-            gantt.add("P" + p[idx].pid);
-            time += p[idx].burstTime;
-            p[idx].completionTime = time;
-            p[idx].turnaroundTime = p[idx].completionTime - p[idx].arrivalTime;
-            p[idx].waitingTime = p[idx].turnaroundTime - p[idx].burstTime;
-            p[idx].done = true;
+            // Step 3: Execute the selected process
+            gantt.add("P" + p[idx].pid);       // record execution order
+            time += p[idx].burstTime;          // increase time by burst time (runs to completion)
+            p[idx].completionTime = time;      // record completion time
+            p[idx].turnaroundTime = p[idx].completionTime - p[idx].arrivalTime; // TAT = CT - AT
+            p[idx].waitingTime = p[idx].turnaroundTime - p[idx].burstTime;      // WT = TAT - BT
+            p[idx].done = true;                // mark as completed
 
+            // Step 4: Update totals
             totalWT += p[idx].waitingTime;
             totalTAT += p[idx].turnaroundTime;
             completed++;
         }
 
-        // Print table
+        // Step 5: Display the output table
         System.out.println("\nPID\tAT\tBT\tPR\tCT\tTAT\tWT");
         for (Process pr : p) {
             System.out.printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
@@ -97,31 +114,33 @@ public class SchedulingSimulation {
                     pr.completionTime, pr.turnaroundTime, pr.waitingTime);
         }
 
-        // Averages
+        // Step 6: Show averages
         System.out.printf("\nAverage Waiting Time: %.2f\n", (double) totalWT / n);
         System.out.printf("Average Turnaround Time: %.2f\n", (double) totalTAT / n);
 
-        // Gantt Chart
+        // Step 7: Display Gantt Chart (Execution Order)
         System.out.println("\nGantt Chart:");
         System.out.print("| ");
         for (String s : gantt) System.out.print(s + " | ");
         System.out.println();
     }
 
-    // ------------------------------------------------------------
-    // SJF SCHEDULING (NON-PREEMPTIVE)
-    // ------------------------------------------------------------
+    // =====================================================================
+    // SHORTEST JOB FIRST (SJF) SCHEDULING (NON-PREEMPTIVE)
+    // =====================================================================
     static void sjfScheduling(Process[] p) {
         int n = p.length;
-        int completed = 0, time = 0;
-        int totalWT = 0, totalTAT = 0;
-        List<String> gantt = new ArrayList<>();
+        int completed = 0;              // number of finished processes
+        int time = 0;                   // CPU clock
+        int totalWT = 0, totalTAT = 0;  // total times for averages
+        List<String> gantt = new ArrayList<>(); // to store Gantt Chart
 
+        // Loop until all processes are done
         while (completed < n) {
-            int idx = -1;
-            int minBT = Integer.MAX_VALUE;
+            int idx = -1;               // index of process with shortest burst time
+            int minBT = Integer.MAX_VALUE; // to find smallest burst time
 
-            // Find process with shortest burst time among those arrived
+            // Step 1: Among arrived processes, find the one with shortest burst time
             for (int i = 0; i < n; i++) {
                 if (!p[i].done && p[i].arrivalTime <= time && p[i].burstTime < minBT) {
                     minBT = p[i].burstTime;
@@ -129,24 +148,27 @@ public class SchedulingSimulation {
                 }
             }
 
+            // Step 2: If no process has arrived yet, CPU stays idle for a time unit
             if (idx == -1) {
                 time++;
                 continue;
             }
 
-            gantt.add("P" + p[idx].pid);
-            time += p[idx].burstTime;
-            p[idx].completionTime = time;
-            p[idx].turnaroundTime = p[idx].completionTime - p[idx].arrivalTime;
-            p[idx].waitingTime = p[idx].turnaroundTime - p[idx].burstTime;
-            p[idx].done = true;
+            // Step 3: Execute the selected process
+            gantt.add("P" + p[idx].pid);       // add process to Gantt chart
+            time += p[idx].burstTime;          // process runs till completion
+            p[idx].completionTime = time;      // record completion time
+            p[idx].turnaroundTime = p[idx].completionTime - p[idx].arrivalTime; // TAT = CT - AT
+            p[idx].waitingTime = p[idx].turnaroundTime - p[idx].burstTime;      // WT = TAT - BT
+            p[idx].done = true;                // mark as done
 
+            // Step 4: Update total waiting and turnaround times
             totalWT += p[idx].waitingTime;
             totalTAT += p[idx].turnaroundTime;
             completed++;
         }
 
-        // Print table
+        // Step 5: Display the results table
         System.out.println("\nPID\tAT\tBT\tPR\tCT\tTAT\tWT");
         for (Process pr : p) {
             System.out.printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
@@ -154,11 +176,11 @@ public class SchedulingSimulation {
                     pr.completionTime, pr.turnaroundTime, pr.waitingTime);
         }
 
-        // Averages
+        // Step 6: Print average waiting and turnaround times
         System.out.printf("\nAverage Waiting Time: %.2f\n", (double) totalWT / n);
         System.out.printf("Average Turnaround Time: %.2f\n", (double) totalTAT / n);
 
-        // Gantt Chart
+        // Step 7: Print the Gantt Chart
         System.out.println("\nGantt Chart:");
         System.out.print("| ");
         for (String s : gantt) System.out.print(s + " | ");
