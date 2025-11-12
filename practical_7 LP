@@ -19,19 +19,19 @@ public class SchedulingSimulation {
         // Step 1: Input process details
         System.out.print("Enter number of processes: ");
         int n = sc.nextInt();
-        Process[] processes = new Process[n];
+        Process[] processes = new Process[n]; //Ask user for total number of processes n
 
         for (int i = 0; i < n; i++) {
             System.out.print("Enter Burst Time for Process " + (i + 1) + ": ");
             int bt = sc.nextInt();
-            processes[i] = new Process(i + 1, bt);
+            processes[i] = new Process(i + 1, bt);  //Loop takes arrival and burst time for each process and stores it.
         }
 
         // Step 2: Run both algorithms
-        System.out.println("\n===== FCFS Scheduling =====");
-        fcfs(processes.clone());
+        System.out.println("\n===== FCFS Scheduling ====="); //Calls the FCFS scheduling function
+        fcfs(processes.clone()); //We use .clone() so the same original data can also be reused for RR.
 
-        System.out.println("\n===== Round Robin Scheduling =====");
+        System.out.println("\n===== Round Robin Scheduling ====="); //Calls the RR scheduling function
         rr(processes.clone(), sc);
 
         sc.close();
@@ -40,9 +40,9 @@ public class SchedulingSimulation {
     // -------------------- FCFS Scheduling --------------------
     static void fcfs(Process[] p) {
         int currentTime = 0;
-        int totalWT = 0, totalTAT = 0;
+        int totalWT = 0, totalTAT = 0; //totalWT and totalTAT will help calculate averages later.
 
-        // Each process runs in the order entered
+        
         for (Process pr : p) {
             pr.waitingTime = currentTime;
             currentTime += pr.burstTime;
@@ -53,14 +53,14 @@ public class SchedulingSimulation {
         }
 
         // Display results
-        System.out.println("\nPID\tBT\tWT\tTAT");
+        System.out.println("\nPID\tBT\tWT\tTAT"); //Prints table headers.
         for (Process pr : p) {
             System.out.printf("P%d\t%d\t%d\t%d\n",
-                    pr.pid, pr.burstTime, pr.waitingTime, pr.turnaroundTime);
+                    pr.pid, pr.burstTime, pr.waitingTime, pr.turnaroundTime); //Prints details of each process.
         }
 
         System.out.printf("\nAverage Waiting Time: %.2f", (double) totalWT / p.length);
-        System.out.printf("\nAverage Turnaround Time: %.2f\n", (double) totalTAT / p.length);
+        System.out.printf("\nAverage Turnaround Time: %.2f\n", (double) totalTAT / p.length); //print averages
     }
 
     // -------------------- Round Robin Scheduling --------------------
@@ -71,13 +71,13 @@ public class SchedulingSimulation {
         int n = p.length;
         int[] remaining = new int[n];
         for (int i = 0; i < n; i++)
-            remaining[i] = p[i].burstTime;
+            remaining[i] = p[i].burstTime; // We store remaining burst time for each process separately.
 
         int time = 0;
         boolean done;
 
         System.out.print("\nGantt Chart:\n");
-        System.out.print(time);
+        System.out.print(time); //Gantt Chart visually shows CPU switching between processes.
 
         // Repeat until all processes complete
         do {
@@ -90,13 +90,13 @@ public class SchedulingSimulation {
                         System.out.print(" | P" + (i + 1) + " | ");
                         time += quantum;
                         System.out.print(time);
-                        remaining[i] -= quantum;
+                        remaining[i] -= quantum; // If the process still has burst time left, it runs for one quantum and then goes back in the queue.
                     } else {
                         System.out.print(" | P" + (i + 1) + " | ");
                         time += remaining[i];
                         System.out.print(time);
                         p[i].waitingTime = time - p[i].burstTime;
-                        remaining[i] = 0;
+                        remaining[i] = 0; // If a process finishes, we calculate its waiting time
                     }
                 }
             }
