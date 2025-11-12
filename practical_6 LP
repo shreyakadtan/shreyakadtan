@@ -19,17 +19,17 @@ class Process {
     }
 }
 
-public class SchedulingSimulation {
+public class SchedulingSimulation { //SchedulingSimulation is the main class containing the main() function.Scanner is used for user input.
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
         // Step 1: Take total number of processes as input
-        System.out.print("Enter number of processes: ");
+        System.out.print("Enter number of processes: "); //The program first asks how many processes to schedule.
         int n = sc.nextInt();
 
         Process[] processes = new Process[n];
 
-        // Step 2: Take details for each process
+        // Step 2: Take Inputs for each process
         for (int i = 0; i < n; i++) {
             System.out.println("\nEnter details for Process " + (i + 1));
             System.out.print("Arrival Time: ");
@@ -44,10 +44,10 @@ public class SchedulingSimulation {
 
         // Step 3: Run both scheduling algorithms
         System.out.println("\n===== FCFS Scheduling =====");
-        fcfs(processes.clone());  // First Come First Serve
+        fcfs(processes.clone());  //Calls FCFS Scheduling //We use .clone() so the same original data can also be reused for SJF.
 
         System.out.println("\n===== Priority Scheduling =====");
-        priorityScheduling(processes.clone());  // Non-preemptive Priority Scheduling
+        priorityScheduling(processes.clone());  // Calls Priority Scheduling
 
         sc.close();
     }
@@ -55,40 +55,40 @@ public class SchedulingSimulation {
     // ------------------ FCFS ALGORITHM ------------------
     static void fcfs(Process[] p) {
         // Sort processes by Arrival Time
-        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime));
+        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime)); //Sort all processes by their arrival time (who comes first).
         int currentTime = 0;  // Keeps track of CPU time
 
-        // Calculate Completion, Turnaround, and Waiting Times
+        
         for (Process pr : p) {
             if (currentTime < pr.arrivalTime)
-                currentTime = pr.arrivalTime;  // CPU idle until process arrives
+                currentTime = pr.arrivalTime;  // Initialize currentTime
 
             pr.completionTime = currentTime + pr.burstTime;
             pr.turnaroundTime = pr.completionTime - pr.arrivalTime;
             pr.waitingTime = pr.turnaroundTime - pr.burstTime;
 
-            currentTime = pr.completionTime; // Move CPU clock forward
+            currentTime = pr.completionTime; // Then update currentTime
         }
 
-        // Display results
+        // Call display function to print results.
         display(p);
     }
 
     // ------------------ PRIORITY SCHEDULING ------------------
     static void priorityScheduling(Process[] p) {
         // Sort by arrival time first
-        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime));
+        Arrays.sort(p, Comparator.comparingInt(x -> x.arrivalTime)); //Then update currentTime
 
         int currentTime = 0;
         List<Process> completed = new ArrayList<>();
 
-        // Continue until all processes are executed
+
         while (completed.size() < p.length) {
-            // Step 1: Collect all processes that have arrived so far
+            
             List<Process> ready = new ArrayList<>();
             for (Process pr : p)
                 if (!completed.contains(pr) && pr.arrivalTime <= currentTime)
-                    ready.add(pr);
+                    ready.add(pr); //Collect all processes that have already arrived and are not completed yet.
 
             // Step 2: If no process is ready, increment time (CPU idle)
             if (ready.isEmpty()) {
