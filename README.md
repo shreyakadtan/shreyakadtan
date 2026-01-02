@@ -25,4 +25,16 @@ The data is visualized on a simple dashboard built using **Flask** and **HTML te
 ---
 
 ## 📂 Project Structure
+Student-Performance-Dashboard/
+│
+├── app.py                      
+├── StudentPerformanceFactors.csv 
+├── requirements.txt           
+├── README.md                  
+│
+├── templates/                 
+│   └── index.html              
+│
+└── static/                     
+    └── style.css               
 
